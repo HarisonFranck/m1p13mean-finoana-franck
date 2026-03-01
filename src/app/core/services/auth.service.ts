@@ -43,14 +43,31 @@ export class AuthService {
 
     getToken(): string | null {
         if (this.isBrowser) {
-            return localStorage.getItem('auth_token');
+            const token = localStorage.getItem('auth_token');
+            if (token && this.isTokenExpired(token)) {
+                this.logout();
+                return null;
+            }
+            return token;
         }
         return null;
+    }
+
+    private isTokenExpired(token: string): boolean {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (!payload.exp) return false;
+            const expirationDate = new Date(payload.exp * 1000);
+            return expirationDate < new Date();
+        } catch (e) {
+            return true;
+        }
     }
 
     logout() {
         if (this.isBrowser) {
             localStorage.removeItem('auth_token');
+            // We don't necessarily redirect here to avoid circular dependencies if used in Guards
         }
     }
 

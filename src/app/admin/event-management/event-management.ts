@@ -50,9 +50,10 @@ export class EventManagement implements OnInit {
             next: (events) => {
                 console.log('Evénements récupérés:', events.length);
                 this.dataSource.data = events.map((e: any) => ({
-                    _id: e._id,
-                    title: e.title,
-                    date: e.startDate || e.createdAt,
+                    ...e,
+                    startDate: e.startDate || e.createdAt,
+                    endDate: e.endDate,
+                    date: e.startDate || e.createdAt, // For existing logic or fallback
                     location: e.location || 'Non spécifié',
                     type: e.status || 'Standard'
                 }));

@@ -81,48 +81,6 @@ import { ConfirmDialog } from '../../shared/components/confirm-dialog';
             </form>
           </mat-tab>
 
-          <!-- Onglet : Catégories -->
-          <mat-tab label="Catégories">
-            <div class="tab-content-v2 column">
-              <div class="settings-section">
-                <div class="section-header-v2">
-                  <mat-icon>category</mat-icon>
-                  <span>Taxonomie des Boutiques</span>
-                </div>
-                
-                <div class="add-category-box">
-                  <mat-form-field appearance="outline" class="flex-grow">
-                    <mat-label>Nouvelle catégorie</mat-label>
-                    <input matInput [formControl]="categoryCtrl" placeholder="Ex: Technologie & Innovation" (keyup.enter)="addCategory()">
-                  </mat-form-field>
-                  <button mat-flat-button color="primary" class="btn-add-cat" (click)="addCategory()" [disabled]="categoryCtrl.invalid || !categoryCtrl.value">
-                    Ajouter
-                  </button>
-                </div>
-
-                <div class="categories-list-premium">
-                  <div class="cat-chip-premium" *ngFor="let cat of categories">
-                    <div class="cat-info-v2">
-                      <div class="cat-dot"></div>
-                      <span>{{ cat.name }}</span>
-                    </div>
-                    <button mat-icon-button (click)="deleteCategory(cat)" class="btn-remove-cat">
-                      <mat-icon>delete_outline</mat-icon>
-                    </button>
-                  </div>
-
-                  <div class="empty-cats" *ngIf="categories.length === 0">
-                    <mat-icon>inventory_2</mat-icon>
-                    <p>Aucune catégorie configurée</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="tab-footer">
-                <button mat-button type="button" (click)="onCancel()" class="btn-close-settings">Fermer</button>
-              </div>
-            </div>
-          </mat-tab>
         </mat-tab-group>
       </mat-dialog-content>
     </div>

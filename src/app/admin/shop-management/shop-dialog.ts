@@ -98,10 +98,34 @@ import { AdminService } from '../../core/services/admin.service';
               </div>
             </div>
 
+            <!-- Section: Presence & Media -->
+            <div class="setup-section">
+              <div class="setup-header">
+                <span class="setup-num">03</span>
+                <h3>Visibilité & Médias</h3>
+              </div>
+              
+              <div class="input-row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Statut de la boutique</mat-label>
+                  <mat-select formControlName="status">
+                    <mat-option [value]="1">Active / Ouverte</mat-option>
+                    <mat-option [value]="0">Inactive / Fermée</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="flex-2">
+                  <mat-label>Lien de l'image / Logo</mat-label>
+                  <input matInput formControlName="picture" placeholder="https://url-de-l-image.com/logo.png">
+                  <mat-icon matSuffix>image</mat-icon>
+                </mat-form-field>
+              </div>
+            </div>
+
             <!-- Section: Description -->
             <div class="setup-section no-border">
               <div class="setup-header">
-                <span class="setup-num">03</span>
+                <span class="setup-num">04</span>
                 <h3>Présentation</h3>
               </div>
               <mat-form-field appearance="outline" class="full-width">
@@ -375,6 +399,8 @@ export class ShopDialog implements OnInit {
       location: [data.location || ''],
       description: [data.description || ''],
       idOwner: [data.idOwner?._id || data.idOwner || '', Validators.required],
+      status: [data.status !== undefined ? data.status : 1],
+      picture: [data.picture || '']
     });
   }
 
