@@ -11,38 +11,14 @@ export class ShopService {
     
     constructor(private http: HttpClient) { }
 
-    // Shop Info
-    getInfo(id: String): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/shops/${id}`);
-    }
-
-    updateInfo(id: String, offerData: any): Observable<any> {
-        return this.http.put<any>(`${this.apiUrl}/shops/${id}`, offerData);
+    // Shop 
+    getAllShops(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/shops`);
     }
 
     // Offers
     getAllActiveOffers(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/offers/shop/active`);
-    }
-
-    getAllPendingOffers(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/offers/shop/pending`);
-    }
-
-    getAllHistoricOffers(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/offers/shop/historic`);
-    }
-
-    createOffer(offerData: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/offers`, offerData);
-    }
-
-    updateOffer(id: string, offerData: any): Observable<any> {
-        return this.http.put<any>(`${this.apiUrl}/offers/${id}`, offerData);
-    }
-
-    deleteOffer(id: string, offerData: any): Observable<any> {
-        return this.http.delete<any>(`${this.apiUrl}/offers/${id}`, offerData);
+        return this.http.get<any[]>(`${this.apiUrl}/offers/active`);
     }
 
     // Products
@@ -61,10 +37,6 @@ export class ShopService {
         return this.http.get<any[]>(`${this.apiUrl}/products/${id}`);
     }
 
-    createProduct(productData: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/products`, productData);
-    }
-
     // Review
     getReviewsByShop(id: String): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/shops/${id}/shop`);
@@ -74,11 +46,11 @@ export class ShopService {
         return this.http.get<any[]>(`${this.apiUrl}/shops/${id}/product`);
     }
 
-    // Reduction
-    createReduction(reductionData: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/reduction`, reductionData);
+    getReviewsByCustomer(id: String): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/shops/${id}/customer`);
     }
 
+    // Reduction
     getReductionByProduct(id: String): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/reduction/${id}/product`);
     }
