@@ -75,44 +75,20 @@ import { MatIconModule } from '@angular/material/icon';
               </mat-form-field>
             </div>
 
-            <!-- Section: Role -->
+            <!-- Section: Account Status -->
             <div class="setup-section no-border">
               <div class="setup-header">
-                <span class="setup-num">03</span>
-                <h3>Rôle & Privilèges</h3>
+                <span class="setup-num">04</span>
+                <h3>Statut du Compte</h3>
               </div>
               
-              <div class="role-selection-grid">
-                <div class="role-card-v2" 
-                     [class.active]="userForm.get('profile')?.value === 'SHOP'"
-                     (click)="userForm.get('profile')?.setValue('SHOP')">
-                  <div class="radio-indicator">
-                    <div class="inner-dot"></div>
-                  </div>
-                  <div class="role-icon-box">
-                    <mat-icon>storefront</mat-icon>
-                  </div>
-                  <div class="role-text">
-                    <div class="role-title">Gestionnaire Boutique</div>
-                    <div class="role-desc">Accès limité à la gestion d'une enseigne spécifique</div>
-                  </div>
-                </div>
-
-                <div class="role-card-v2" 
-                     [class.active]="userForm.get('profile')?.value === 'ADMIN'"
-                     (click)="userForm.get('profile')?.setValue('ADMIN')">
-                  <div class="radio-indicator">
-                    <div class="inner-dot"></div>
-                  </div>
-                  <div class="role-icon-box admin">
-                    <mat-icon>admin_panel_settings</mat-icon>
-                  </div>
-                  <div class="role-text">
-                    <div class="role-title">Administrateur Mall</div>
-                    <div class="role-desc">Accès total à la configuration et supervision plateforme</div>
-                  </div>
-                </div>
-              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>État de l'accès</mat-label>
+                <mat-select formControlName="status">
+                  <mat-option [value]="1">Actif / Autorisé</mat-option>
+                  <mat-option [value]="2">Suspendu / Bloqué</mat-option>
+                </mat-select>
+              </mat-form-field>
             </div>
 
           </div>
@@ -380,14 +356,14 @@ export class UserDialog {
       name: [data.name || '', Validators.required],
       email: [data.email || '', [Validators.required, Validators.email]],
       password: ['', data._id ? [] : [Validators.required, Validators.minLength(6)]],
-      profile: [data.profile || 'SHOP', Validators.required]
+      profile: [data.profile || 'SHOP', Validators.required],
+      status: [data.status !== undefined ? data.status : 1]
     });
   }
 
   onSubmit() {
     if (this.userForm.valid) {
-      const formValue = this.userForm.value;
-      this.dialogRef.close({ ...formValue, status: 1 });
+      this.dialogRef.close(this.userForm.value);
     }
   }
 

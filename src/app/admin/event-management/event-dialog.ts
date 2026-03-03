@@ -82,13 +82,21 @@ import { AdminService } from '../../core/services/admin.service';
                 <h3>Calendrier</h3>
               </div>
               
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Date de l'événement</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="startDate" (click)="picker.open()">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-                <mat-hint>Date de début ou de tenue de l'événement</mat-hint>
-              </mat-form-field>
+              <div class="input-row">
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Date de début</mat-label>
+                  <input matInput [matDatepicker]="startPicker" formControlName="startDate" (click)="startPicker.open()">
+                  <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="flex-1">
+                  <mat-label>Date de fin</mat-label>
+                  <input matInput [matDatepicker]="endPicker" formControlName="endDate" (click)="endPicker.open()">
+                  <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+              </div>
             </div>
 
             <!-- Section: About -->
@@ -303,6 +311,7 @@ export class EventDialog implements OnInit {
     this.eventForm = this.fb.group({
       title: [data?.title || '', Validators.required],
       startDate: [data?.startDate || data?.date || ''],
+      endDate: [data?.endDate || ''],
       location: [data?.location || ''],
       status: [data?.status || data?.type || ''],
       description: [data?.description || '']

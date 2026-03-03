@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -9,7 +9,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdminService } from '../../core/services/admin.service';
+import { SocketService } from '../../core/services/socket.service';
 import { ConfirmDialog } from '../../shared/components/confirm-dialog';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-content-moderation',
@@ -28,15 +30,17 @@ import { ConfirmDialog } from '../../shared/components/confirm-dialog';
     templateUrl: './content-moderation.html',
     styleUrl: './content-moderation.css'
 })
-export class ContentModeration implements OnInit {
+export class ContentModeration implements OnInit, OnDestroy {
     offerColumns: string[] = ['title', 'target', 'date', 'status', 'actions'];
     reviewColumns: string[] = ['user', 'targetType', 'comment', 'rating', 'actions'];
 
     pendingOffers: any[] = [];
     allReviews: any[] = [];
+    private socketSubscription?: Subscription;
 
     constructor(
         private adminService: AdminService,
+        private socketService: SocketService,
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
         @Inject(PLATFORM_ID) private platformId: Object
@@ -46,7 +50,25 @@ export class ContentModeration implements OnInit {
         if (isPlatformBrowser(this.platformId)) {
             this.loadPendingOffers();
             this.loadReviews();
+            this.setupRealtimeSync();
         }
+    }
+
+    ngOnDestroy() {
+        if (this.socketSubscription) {
+            this.socketSubscription.unsubscribe();
+        }
+    }
+
+    setupRealtimeSync() {
+        this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+            console.log('Moderation: Realtime update received:', update);
+            if (update.collection === 'offers') {
+                this.loadPendingOffers();
+            } else if (update.collection === 'reviews') {
+                this.loadReviews();
+            }
+        });
     }
 
     loadPendingOffers() {

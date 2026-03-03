@@ -1,1 +1,123 @@
-<p>Le tableau de bord boutique fonctionne !</p>
+<div class="dashboard-container" *ngIf="!loading">
+    <div class="welcome-section">
+        <h1>Bienvenue sur votre Tableau de Bord</h1>
+        <p>Aperçu en temps réel de votre boutique</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <mat-card class="stat-card products">
+            <mat-card-content>
+                <div class="stat-header">
+                    <div class="icon-box">
+                        <mat-icon>inventory_2</mat-icon>
+                    </div>
+                    <span class="trend positive">+{{stats.productCount}}</span>
+                </div>
+                <div class="stat-main">
+                    <span class="value">{{stats.productCount}}</span>
+                    <span class="label">Produits actifs</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card offers">
+            <mat-card-content>
+                <div class="stat-header">
+                    <div class="icon-box">
+                        <mat-icon>local_offer</mat-icon>
+                    </div>
+                </div>
+                <div class="stat-main">
+                    <span class="value">{{stats.offerCount}}</span>
+                    <span class="label">Offres en cours</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card reviews">
+            <mat-card-content>
+                <div class="stat-header">
+                    <div class="icon-box">
+                        <mat-icon>rate_review</mat-icon>
+                    </div>
+                </div>
+                <div class="stat-main">
+                    <span class="value">{{stats.reviewCount}}</span>
+                    <span class="label">Avis reçus</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card rating">
+            <mat-card-content>
+                <div class="stat-header">
+                    <div class="icon-box">
+                        <mat-icon>star</mat-icon>
+                    </div>
+                </div>
+                <div class="stat-main">
+                    <span class="value">{{stats.rating?.toFixed(1) || '0.0'}}</span>
+                    <span class="label">Note moyenne</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <div class="dashboard-content-grid">
+        <!-- Recent Reviews -->
+        <mat-card class="activity-card">
+            <mat-card-header>
+                <mat-card-title>Avis récents</mat-card-title>
+                <mat-card-subtitle>Les derniers retours de vos clients</mat-card-subtitle>
+            </mat-card-header>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <app-premium-empty-state *ngIf="!reviews || reviews.length === 0" icon="chat_bubble_outline"
+                    title="Aucun avis pour le moment"
+                    message="Vos clients n'ont pas encore laissé d'avis sur votre boutique. Soyez les premiers à les inviter !">
+                </app-premium-empty-state>
+                <div class="review-list" *ngIf="reviews && reviews.length > 0">
+                    <div class="review-item" *ngFor="let review of reviews; let isLast = last">
+                        <div class="review-header">
+                            <span class="user-name">{{review.user?.name}}</span>
+                            <div class="rating-stars">
+                                <mat-icon *ngFor="let s of [1,2,3,4,5]"
+                                    [class.active]="s <= review.rating">star</mat-icon>
+                            </div>
+                        </div>
+                        <p class="comment">{{review.comment}}</p>
+                        <span class="date">{{review.createdAt | date:'shortDate'}}</span>
+                        <mat-divider *ngIf="!isLast"></mat-divider>
+                    </div>
+                </div>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button class="btn-view-all" routerLink="/shop/reviews">VOIR TOUT</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-grid">
+            <mat-card class="action-card" (click)="navigateToProfile()">
+                <mat-card-content>
+                    <mat-icon>settings</mat-icon>
+                    <span>Modifier Profil</span>
+                </mat-card-content>
+            </mat-card>
+            <mat-card class="action-card" (click)="navigateToCreateOffer()">
+                <mat-card-content>
+                    <mat-icon>add_circle</mat-icon>
+                    <span>Créer Offre</span>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+</div>
+
+<div class="loading-state" *ngIf="loading">
+    <div class="shimmer-card"></div>
+    <div class="shimmer-card"></div>
+    <div class="shimmer-card"></div>
+    <div class="shimmer-card"></div>
+</div>

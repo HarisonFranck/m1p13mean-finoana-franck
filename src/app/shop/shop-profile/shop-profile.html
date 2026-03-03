@@ -1,0 +1,137 @@
+<div class="profile-container">
+    <div class="header-section">
+        <h1>Mon Profil Boutique</h1>
+        <p>Gérez les informations de votre enseigne et vos horaires d'ouverture.</p>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading; else loading">
+        <div class="profile-grid">
+            <!-- Informations Générales -->
+            <mat-card class="premium-card">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>info</mat-icon>
+                    <mat-card-title>Informations Générales</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Nom de la boutique</mat-label>
+                            <input matInput formControlName="name" placeholder="Ex: My Awesome Shop">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Description</mat-label>
+                            <textarea matInput formControlName="description" rows="4"
+                                placeholder="Décrivez votre boutique..."></textarea>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Emplacement / Adresse</mat-label>
+                            <input matInput formControlName="location" placeholder="Ex: Étage 1, Allée B">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row image-upload-section">
+                        <div class="logo-preview"
+                            [style.background-image]="imagePreview ? 'url(' + imagePreview + ')' : null"
+                            (click)="logoInput.click()">
+                            <mat-icon *ngIf="!imagePreview">add_a_photo</mat-icon>
+                        </div>
+                        <div class="upload-info">
+                            <h3>Logo de la boutique</h3>
+                            <p>Cliquez sur l'image pour changer votre logo.</p>
+                            <input #logoInput type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Coordonnées & Réseaux Sociaux -->
+            <mat-card class="premium-card" formGroupName="contactInfo">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>contact_phone</mat-icon>
+                    <mat-card-title>Coordonnées</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Téléphone</mat-label>
+                            <input matInput formControlName="phone" placeholder="+261 ...">
+                        </mat-form-field>
+                    </div>
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Site Web</mat-label>
+                            <input matInput formControlName="website" placeholder="https://...">
+                        </mat-form-field>
+                    </div>
+
+                    <mat-divider style="margin: 16px 0;"></mat-divider>
+                    <h3 class="section-title">Réseaux Sociaux</h3>
+
+                    <div class="form-row" formGroupName="socialMedia">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Facebook</mat-label>
+                            <input matInput formControlName="facebook" placeholder="facebook.com/...">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Instagram</mat-label>
+                            <input matInput formControlName="instagram" placeholder="@username">
+                        </mat-form-field>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Horaires d'ouverture -->
+            <mat-card class="premium-card full-span">
+                <mat-card-header>
+                    <mat-icon mat-card-avatar>schedule</mat-icon>
+                    <mat-card-title>Horaires d'Ouverture</mat-card-title>
+                    <mat-card-subtitle>Configurez vos heures de présence hebdomadaires.</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="hours-grid" formArrayName="openingHours">
+                        <div *ngFor="let hourGroup of openingHours.controls; let i = index" [formGroupName]="i"
+                            class="hour-row">
+                            <span class="day-label">{{ days[i] }}</span>
+
+                            <mat-checkbox formControlName="isClosed">Fermé</mat-checkbox>
+
+                            <div class="time-inputs" *ngIf="!hourGroup.get('isClosed')?.value">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Ouverture</mat-label>
+                                    <input matInput type="time" formControlName="open">
+                                </mat-form-field>
+                                <span>à</span>
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Fermeture</mat-label>
+                                    <input matInput type="time" formControlName="close">
+                                </mat-form-field>
+                            </div>
+                            <span *ngIf="hourGroup.get('isClosed')?.value" class="closed-label">Boutique fermée toute la
+                                journée</span>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        <div class="actions-footer">
+            <button mat-flat-button color="primary" type="submit" [disabled]="profileForm.invalid || isLoading"
+                class="save-btn">
+                <mat-icon>save</mat-icon> Enregistrer les modifications
+            </button>
+        </div>
+    </form>
+
+    <ng-template #loading>
+        <div class="loading-spinner">
+            <mat-icon class="pulse">sync</mat-icon>
+            <span>Chargement de votre profil...</span>
+        </div>
+    </ng-template>
+</div>

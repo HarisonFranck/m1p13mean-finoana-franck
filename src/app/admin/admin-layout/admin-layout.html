@@ -30,12 +30,14 @@
             </a>
         </mat-nav-list>
 
+
         <div class="sidenav-footer">
-            <button mat-flat-button class="logout-btn-premium" routerLink="/auth/login" title="Déconnexion">
+            <button mat-flat-button class="logout-btn-premium" (click)="logout()" title="Déconnexion">
                 <mat-icon>logout</mat-icon>
                 <span class="sidenav-text" style="margin-left: 12px;">Déconnexion</span>
             </button>
         </div>
+
     </mat-sidenav>
 
     <mat-sidenav-content class="admin-content" [class.content-expanded]="!isSidenavOpen">
@@ -45,18 +47,79 @@
                 <mat-icon>menu</mat-icon>
             </button>
 
-            <div class="toolbar-search">
+            <div class="toolbar-search" [matMenuTriggerFor]="searchMenu">
                 <mat-icon class="search-icon">search</mat-icon>
-                <input type="text" placeholder="Rechercher...">
+                <input type="text" placeholder="Rechercher..." [(ngModel)]="searchQuery" (input)="onSearch()">
+                <button mat-icon-button *ngIf="searchQuery" (click)="clearSearch()" class="clear-search">
+                    <mat-icon>close</mat-icon>
+                </button>
             </div>
+
+            <mat-menu #searchMenu="matMenu" class="search-results-menu premium-menu">
+                <div class="search-menu-header" (click)="$event.stopPropagation()">
+                    <span>Résultats de recherche</span>
+                    <mat-chip *ngIf="searchResults.length">{{ searchResults.length }} trouvés</mat-chip>
+                </div>
+                <mat-divider></mat-divider>
+                <div class="search-results-container" (click)="$event.stopPropagation()">
+                    <button mat-menu-item *ngFor="let result of searchResults" (click)="navigateToResult(result)">
+                        <mat-icon [style.color]="'var(--primary)'">{{ result.icon }}</mat-icon>
+                        <div class="result-info">
+                            <span class="result-title">{{ result.title }}</span>
+                            <span class="result-type">{{ result.type }}</span>
+                        </div>
+                    </button>
+                    <div *ngIf="searchResults.length === 0 && searchQuery" class="no-results">
+                        <mat-icon>search_off</mat-icon>
+                        <span>Aucun résultat pour "{{ searchQuery }}"</span>
+                    </div>
+                </div>
+            </mat-menu>
 
             <span class="toolbar-spacer"></span>
 
-            <button mat-icon-button class="toolbar-btn">
+            <button mat-icon-button class="toolbar-btn" [matMenuTriggerFor]="notificationMenu">
                 <mat-icon>notifications_none</mat-icon>
-                <div class="notification-dot"></div>
+                <div class="notification-dot" *ngIf="unreadCount > 0"></div>
             </button>
 
+            <mat-menu #notificationMenu="matMenu" class="notification-menu premium-menu">
+                <div class="notification-header" (click)="$event.stopPropagation()">
+                    <div class="title-row">
+                        <span>Notifications</span>
+                        <span class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }} nouvelles</span>
+                    </div>
+                    <button mat-button color="primary" class="mark-all-btn" (click)="markAllAsRead()">
+                        Tout marquer comme lu
+                    </button>
+                </div>
+                <mat-divider></mat-divider>
+                <div class="notification-list" (click)="$event.stopPropagation()">
+                    <button mat-menu-item *ngFor="let note of notifications" [class.unread]="!note.read"
+                        (click)="markAsRead(note._id)">
+                        <div class="note-icon" [style.background-color]="note.color + '20'">
+                            <mat-icon [style.color]="note.color">{{ note.icon }}</mat-icon>
+                        </div>
+                        <div class="note-content">
+                            <div class="note-title-row">
+                                <span class="note-title">{{ note.title }}</span>
+                                <span class="note-time">{{ note.createdAt | date:'HH:mm' }}</span>
+                            </div>
+                            <span class="note-message">{{ note.message }}</span>
+                        </div>
+                        <button mat-icon-button class="delete-note" (click)="deleteNotification($event, note._id)">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </button>
+                    <div *ngIf="notifications.length === 0" class="no-notifications">
+                        <mat-icon>notifications_off</mat-icon>
+                        <span>Aucune notification</span>
+                    </div>
+                </div>
+                <mat-divider></mat-divider>
+                <button mat-menu-item class="view-all" routerLink="/admin/notifications">Voir toutes les
+                    notifications</button>
+            </mat-menu>
             <div class="user-profile-pill">
                 <img src="https://ui-avatars.com/api/?name=Admin&background=0ca678&color=fff" alt="Avatar"
                     class="profile-avatar">
@@ -65,6 +128,8 @@
                     <span class="role">Directeur Mall</span>
                 </div>
             </div>
+
+
         </mat-toolbar>
 
         <!-- Hero Section -->
@@ -128,5 +193,10 @@
         <main class="page-content">
             <router-outlet></router-outlet>
         </main>
+
+        <footer class="developer-credits">
+            <span>&copy; 2026 Mall Platform. Développé par:</span>
+            <span class="dev-names">RASOLOMALALA Finoana & HARISON Franck Mauriat</span>
+        </footer>
     </mat-sidenav-content>
 </mat-sidenav-container>

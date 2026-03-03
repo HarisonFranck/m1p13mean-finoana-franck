@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -8,8 +8,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdminService } from '../../core/services/admin.service';
+import { SocketService } from '../../core/services/socket.service';
 import { ShopDialog } from './shop-dialog';
 import { ConfirmDialog } from '../../shared/components/confirm-dialog';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-shop-management',
@@ -27,15 +29,17 @@ import { ConfirmDialog } from '../../shared/components/confirm-dialog';
     templateUrl: './shop-management.html',
     styleUrl: './shop-management.css',
 })
-export class ShopManagement implements OnInit {
+export class ShopManagement implements OnInit, OnDestroy {
     displayedColumns: string[] = ['name', 'category', 'location', 'status', 'actions'];
     allShops: any[] = [];
     dataSource = new MatTableDataSource<any>([]);
     categories: any[] = [];
     selectedCategory: string = 'Toutes';
+    private socketSubscription?: Subscription;
 
     constructor(
         private adminService: AdminService,
+        private socketService: SocketService,
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
         private cdr: ChangeDetectorRef,
@@ -46,7 +50,24 @@ export class ShopManagement implements OnInit {
         if (isPlatformBrowser(this.platformId)) {
             this.loadCategories();
             this.loadShops();
+            this.setupRealtimeSync();
         }
+    }
+
+    ngOnDestroy() {
+        if (this.socketSubscription) {
+            this.socketSubscription.unsubscribe();
+        }
+    }
+
+    setupRealtimeSync() {
+        this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+            console.log('Shops: Realtime update received:', update);
+            if (update.collection === 'shops' || update.collection === 'categories') {
+                this.loadShops();
+                if (update.collection === 'categories') this.loadCategories();
+            }
+        });
     }
 
     loadCategories() {
@@ -61,11 +82,10 @@ export class ShopManagement implements OnInit {
             next: (shops) => {
                 console.log('Boutiques récupérées:', shops.length);
                 this.allShops = shops.map((s: any) => ({
-                    _id: s._id,
-                    name: s.name,
-                    category: s.idCategory?.name || 'Non catégorisé',
-                    location: s.location || 'N/A',
-                    status: s.status === 1 ? 'Ouvert' : 'Fermé'
+                    ...s,
+                    categoryName: s.idCategory?.name || 'Non catégorisé',
+                    locationDisplay: s.location || 'N/A',
+                    statusDisplay: s.status === 1 ? 'Ouvert' : 'Fermé'
                 }));
                 this.applyFilter();
                 this.cdr.detectChanges();
@@ -85,7 +105,7 @@ export class ShopManagement implements OnInit {
         if (this.selectedCategory === 'Toutes') {
             this.dataSource.data = [...this.allShops];
         } else {
-            this.dataSource.data = this.allShops.filter(s => s.category === this.selectedCategory);
+            this.dataSource.data = this.allShops.filter(s => s.categoryName === this.selectedCategory);
         }
     }
 
@@ -101,24 +121,8 @@ export class ShopManagement implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                if (shop?._id) {
-                    this.adminService.updateShop(shop._id, result).subscribe({
-                        next: () => {
-                            this.snackBar.open('Boutique mise à jour !', '', { duration: 2000 });
-                            this.loadShops();
-                        },
-                        error: () => this.snackBar.open('Erreur de mise à jour', 'Fermer')
-                    });
-                } else {
-                    this.adminService.createShop(result).subscribe({
-                        next: () => {
-                            this.snackBar.open('Boutique créée !', '', { duration: 2000 });
-                            this.loadShops();
-                        },
-                        error: () => this.snackBar.open('Erreur de création', 'Fermer')
-                    });
-                }
+            if (result === true) {
+                this.loadShops();
             }
         });
     }

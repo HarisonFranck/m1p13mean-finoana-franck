@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -10,8 +10,16 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDividerModule } from '@angular/material/divider';
+import { FormsModule } from '@angular/forms';
 import { PlatformSettingsDialog } from './platform-settings-dialog';
+import { AdminService } from '../../core/services/admin.service';
+import { AuthService } from '../../core/services/auth.service';
+import { SocketService } from '../../core/services/socket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-layout',
@@ -28,6 +36,10 @@ import { PlatformSettingsDialog } from './platform-settings-dialog';
     MatInputModule,
     MatCardModule,
     MatDialogModule,
+    MatMenuModule,
+    MatChipsModule,
+    MatDividerModule,
+    FormsModule,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -35,8 +47,12 @@ import { PlatformSettingsDialog } from './platform-settings-dialog';
   templateUrl: './admin-layout.html',
   styleUrl: './admin-layout.css',
 })
-export class AdminLayout implements OnInit {
+export class AdminLayout implements OnInit, OnDestroy {
   isSidenavOpen = true;
+  searchQuery = '';
+  searchResults: any[] = [];
+  notifications: any[] = [];
+  private socketSubscription?: Subscription;
 
   // Data for the "Upstream" style Hero Section
   currentContext = {
@@ -49,11 +65,82 @@ export class AdminLayout implements OnInit {
 
   constructor(
     private dialog: MatDialog,
+    private adminService: AdminService,
+    private authService: AuthService,
+    private socketService: SocketService,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit() {
     this.loadSettings();
+    this.fetchNotifications();
+    this.setupRealtimeSync();
+  }
+
+  ngOnDestroy() {
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
+  }
+
+  setupRealtimeSync() {
+    this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+      console.log('Realtime update received:', update);
+      // If notifications (or other global data) changed, refresh
+      this.fetchNotifications();
+    });
+  }
+
+  get unreadCount() {
+    return this.notifications.filter(n => !n.read).length;
+  }
+
+  fetchNotifications() {
+    this.adminService.getNotifications().subscribe(data => {
+      this.notifications = data;
+    });
+  }
+
+  onSearch() {
+    if (!this.searchQuery.trim()) {
+      this.searchResults = [];
+      return;
+    }
+
+    this.adminService.globalSearch(this.searchQuery).subscribe(results => {
+      this.searchResults = results;
+    });
+  }
+
+  navigateToResult(result: any) {
+    this.clearSearch();
+    this.router.navigate([result.link]);
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.searchResults = [];
+  }
+
+  markAsRead(id: string) {
+    this.adminService.markNotificationRead(id).subscribe(() => {
+      const notification = this.notifications.find(n => n._id === id);
+      if (notification) notification.read = true;
+    });
+  }
+
+  markAllAsRead() {
+    this.adminService.markAllNotificationsRead().subscribe(() => {
+      this.notifications.forEach(n => n.read = true);
+    });
+  }
+
+  deleteNotification(event: Event, id: string) {
+    event.stopPropagation();
+    this.adminService.deleteNotification(id).subscribe(() => {
+      this.notifications = this.notifications.filter(n => n._id !== id);
+    });
   }
 
   loadSettings() {
@@ -97,6 +184,7 @@ export class AdminLayout implements OnInit {
   tabs = [
     { label: 'Aperçu', link: '/admin/dashboard', icon: 'dashboard' },
     { label: 'Boutiques', link: '/admin/shops', icon: 'storefront' },
+    { label: 'Catégories', link: '/admin/categories', icon: 'category' },
     { label: 'Utilisateurs', link: '/admin/users', icon: 'people' },
     { label: 'Événements', link: '/admin/events', icon: 'calendar_today' },
     { label: 'Documents', link: '/admin/content', icon: 'description' }
@@ -104,5 +192,10 @@ export class AdminLayout implements OnInit {
 
   toggleSidenav() {
     this.isSidenavOpen = !this.isSidenavOpen;
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 }

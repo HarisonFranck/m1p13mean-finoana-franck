@@ -20,13 +20,20 @@
             <mat-card class="premium-chart-card">
                 <mat-card-header>
                     <mat-card-title>Performance Globale</mat-card-title>
-                    <mat-card-subtitle>Analyse du trafic et des interactions (7 derniers jours)</mat-card-subtitle>
+                    <mat-card-subtitle>Analyse des inscriptions ({{ currentPeriod === 'weekly' ? '7 derniers jours' :
+                        '30 derniers jours' }})</mat-card-subtitle>
                     <div class="header-actions">
-                        <button mat-button class="period-btn">Semaine <mat-icon>expand_more</mat-icon></button>
+                        <button [matMenuTriggerFor]="periodMenu" mat-button class="period-btn">
+                            {{ currentPeriod === 'weekly' ? 'Semaine' : 'Mois' }} <mat-icon>expand_more</mat-icon>
+                        </button>
+                        <mat-menu #periodMenu="matMenu">
+                            <button mat-menu-item (click)="loadDashboardData('weekly')">Semaine</button>
+                            <button mat-menu-item (click)="loadDashboardData('monthly')">Mois</button>
+                        </mat-menu>
                     </div>
                 </mat-card-header>
                 <mat-card-content>
-                    <div class="mock-line-chart">
+                    <div class="mock-line-chart" *ngIf="performanceData.length > 0; else emptyPerformance">
                         <div class="chart-axis-y">
                             <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
                         </div>
@@ -38,9 +45,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="chart-labels-x">
-                        <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span>
+                    <div class="chart-labels-x" *ngIf="performanceData.length > 0">
+                        <span *ngFor="let label of performanceLabels">{{ label }}</span>
                     </div>
+
+                    <ng-template #emptyPerformance>
+                        <div class="empty-state-chart">
+                            <mat-icon>analytics</mat-icon>
+                            <p>Aucune inscription enregistrée pour cette période</p>
+                            <span>Les données de performance s'afficheront dès qu'il y aura de l'activité.</span>
+                        </div>
+                    </ng-template>
                 </mat-card-content>
             </mat-card>
 
@@ -52,7 +67,8 @@
                         <mat-card-title>Flux d'activités</mat-card-title>
                     </mat-card-header>
                     <mat-card-content>
-                        <div class="activity-timeline">
+                        <div class="activity-timeline" *ngIf="false; else emptyFeed">
+                            <!-- Activity feed is currently static mock bits, manually triggering empty for demo if real empty state needed -->
                             <div class="timeline-item">
                                 <div class="dot success"></div>
                                 <div class="content">
@@ -60,21 +76,17 @@
                                     <span>Il y a 2h • Par Admin</span>
                                 </div>
                             </div>
-                            <div class="timeline-item">
-                                <div class="dot primary"></div>
-                                <div class="content">
-                                    <p>Nouvelle offre validée : <strong>Soldes d'été</strong></p>
-                                    <span>Il y a 5h • Zara</span>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="dot warning"></div>
-                                <div class="content">
-                                    <p>Maintenance prévue : <strong>Parking B</strong></p>
-                                    <span>Demain • Services Techniques</span>
-                                </div>
-                            </div>
+                            <!-- ... other items ... -->
                         </div>
+                        <ng-template #emptyFeed>
+                            <div class="empty-state-feed">
+                                <div class="empty-icon-pulse">
+                                    <mat-icon>history</mat-icon>
+                                </div>
+                                <p>Le flux d'activité est vide</p>
+                                <span>Toutes les actions administratives apparaîtront ici en temps réel.</span>
+                            </div>
+                        </ng-template>
                     </mat-card-content>
                 </mat-card>
             </div>
@@ -88,7 +100,7 @@
                     <mat-card-title>Répartition des Boutiques</mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                    <div class="mock-doughnut-container">
+                    <div class="mock-doughnut-container" *ngIf="categoriesData.length > 0; else emptyCategories">
                         <div class="doughnut-circle">
                             <div class="center-text">
                                 <span class="num">{{ stats[0]?.value || '0' }}</span>
@@ -103,6 +115,13 @@
                             </div>
                         </div>
                     </div>
+                    <ng-template #emptyCategories>
+                        <div class="empty-state-insights">
+                            <div class="circle-mock-empty"></div>
+                            <p>Aucune donnée de distribution</p>
+                            <span>Ajoutez des boutiques et des catégories pour voir l'analyse.</span>
+                        </div>
+                    </ng-template>
                 </mat-card-content>
             </mat-card>
 
@@ -120,7 +139,7 @@
                     <mat-icon>assessment</mat-icon>
                     <span>Rapport PDF</span>
                 </button>
-                <button mat-ripple class="shortcut-btn">
+                <button mat-ripple class="shortcut-btn" (click)="openSettings()">
                     <mat-icon>settings</mat-icon>
                     <span>Paramètres</span>
                 </button>

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,8 +8,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AdminService } from '../../core/services/admin.service';
+import { SocketService } from '../../core/services/socket.service';
 import { UserDialog } from './user-dialog';
 import { ConfirmDialog } from '../../shared/components/confirm-dialog';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-user-management',
@@ -27,11 +29,12 @@ import { ConfirmDialog } from '../../shared/components/confirm-dialog';
     templateUrl: './user-management.html',
     styleUrl: './user-management.css'
 })
-export class UserManagement implements OnInit {
+export class UserManagement implements OnInit, OnDestroy {
     displayedColumns: string[] = ['name', 'email', 'profile', 'status', 'actions'];
     allUsers: any[] = [];
     dataSource = new MatTableDataSource<any>([]);
     selectedFilter: string = 'Tous';
+    private socketSubscription?: Subscription;
 
     stats = {
         all: 0,
@@ -42,6 +45,7 @@ export class UserManagement implements OnInit {
 
     constructor(
         private adminService: AdminService,
+        private socketService: SocketService,
         private snackBar: MatSnackBar,
         private dialog: MatDialog,
         private cdr: ChangeDetectorRef,
@@ -51,7 +55,23 @@ export class UserManagement implements OnInit {
     ngOnInit() {
         if (isPlatformBrowser(this.platformId)) {
             this.loadUsers();
+            this.setupRealtimeSync();
         }
+    }
+
+    ngOnDestroy() {
+        if (this.socketSubscription) {
+            this.socketSubscription.unsubscribe();
+        }
+    }
+
+    setupRealtimeSync() {
+        this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+            console.log('Users: Realtime update received:', update);
+            if (update.collection === 'users') {
+                this.loadUsers();
+            }
+        });
     }
 
     loadUsers() {

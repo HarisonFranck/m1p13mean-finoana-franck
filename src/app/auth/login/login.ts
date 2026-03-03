@@ -71,6 +71,7 @@ export class Login {
           // Decode token to find role
           try {
             const payload = JSON.parse(atob(res.token.split('.')[1]));
+            this.authService.setToken(res.token, payload.profile);
             setTimeout(() => {
               if (payload.profile === 'ADMIN') {
                 this.router.navigate(['/admin/dashboard']);

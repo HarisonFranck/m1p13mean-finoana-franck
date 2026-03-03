@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -8,8 +8,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdminService } from '../../core/services/admin.service';
+import { SocketService } from '../../core/services/socket.service';
 import { EventDialog } from './event-dialog';
 import { ConfirmDialog } from '../../shared/components/confirm-dialog';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-event-management',
@@ -27,12 +29,14 @@ import { ConfirmDialog } from '../../shared/components/confirm-dialog';
     templateUrl: './event-management.html',
     styleUrl: './event-management.css',
 })
-export class EventManagement implements OnInit {
+export class EventManagement implements OnInit, OnDestroy {
     displayedColumns: string[] = ['title', 'date', 'location', 'type', 'actions'];
     dataSource = new MatTableDataSource<any>([]);
+    private socketSubscription?: Subscription;
 
     constructor(
         private adminService: AdminService,
+        private socketService: SocketService,
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
         private cdr: ChangeDetectorRef,
@@ -42,7 +46,23 @@ export class EventManagement implements OnInit {
     ngOnInit() {
         if (isPlatformBrowser(this.platformId)) {
             this.loadEvents();
+            this.setupRealtimeSync();
         }
+    }
+
+    ngOnDestroy() {
+        if (this.socketSubscription) {
+            this.socketSubscription.unsubscribe();
+        }
+    }
+
+    setupRealtimeSync() {
+        this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+            console.log('Events: Realtime update received:', update);
+            if (update.collection === 'events') {
+                this.loadEvents();
+            }
+        });
     }
 
     loadEvents() {
@@ -50,9 +70,10 @@ export class EventManagement implements OnInit {
             next: (events) => {
                 console.log('Evénements récupérés:', events.length);
                 this.dataSource.data = events.map((e: any) => ({
-                    _id: e._id,
-                    title: e.title,
-                    date: e.startDate || e.createdAt,
+                    ...e,
+                    startDate: e.startDate || e.createdAt,
+                    endDate: e.endDate,
+                    date: e.startDate || e.createdAt, // For existing logic or fallback
                     location: e.location || 'Non spécifié',
                     type: e.status || 'Standard'
                 }));
