@@ -1,1 +1,90 @@
-<p>L'accueil client fonctionne !</p>
+<div class="client-home-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="animate-up">Découvrez les meilleures <br><span>boutiques du Mall</span></h1>
+      <p class="animate-up delay-1">Trouvez vos produits préférés et profitez d'offres exclusives dans plus de 50
+        boutiques.</p>
+
+      <!-- Integrated Search -->
+      <div class="hero-search animate-up delay-2">
+        <app-search-bar (search)="onSearch($event)"></app-search-bar>
+      </div>
+    </div>
+
+    <!-- Decorative Floating Elements -->
+    <div class="floating-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="categories-section">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Parcourir par catégorie</h2>
+      </div>
+      <app-category-chips *ngIf="!loading || categories.length > 0" [categories]="categories"
+        [selectedCategoryId]="selectedCategoryId" (select)="onCategorySelect($event)">
+      </app-category-chips>
+    </div>
+  </section>
+
+  <!-- Results Area -->
+  <section class="shops-section">
+    <div class="section-container">
+
+      <!-- Shops Section -->
+      <div class="section-header" *ngIf="!searchQuery || shops.length > 0">
+        <h2>{{ searchQuery || selectedCategoryId ? 'Boutiques correspondantes' : 'Boutiques populaires' }}</h2>
+        <span class="count">{{ shops.length }} boutiques trouvées</span>
+      </div>
+
+      <div *ngIf="loading" class="loader-container">
+        <div class="premium-loader"></div>
+      </div>
+
+      <div *ngIf="!loading && shops.length > 0" class="shops-grid">
+        <div *ngFor="let shop of shops; let i = index" class="grid-item animate-fade-in"
+          [style.animation-delay]="i * 0.1 + 's'">
+          <app-shop-card [shop]="shop"></app-shop-card>
+        </div>
+      </div>
+
+      <!-- Products Section (Only shown during search) -->
+      <div *ngIf="searchQuery && products.length > 0" class="product-results">
+        <div class="section-header" style="margin-top: 40px;">
+          <h2>Produits correspondants</h2>
+          <span class="count">{{ products.length }} produits trouvés</span>
+        </div>
+
+        <div class="products-grid">
+          <div *ngFor="let product of products" class="product-search-card"
+            [routerLink]="['/client/shop', product.idShop?._id]">
+            <div class="product-s-img">
+              <img
+                [src]="product.picture || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1000'"
+                [alt]="product.name">
+            </div>
+            <div class="product-s-info">
+              <h4>{{ product.name }}</h4>
+              <div class="p-shop">{{ product.idShop?.name || 'Boutique Inconnue' }} <span
+                  *ngIf="product.idShop?.location">- ({{ product.idShop?.location }})</span></div>
+              <div class="p-price">{{ product.price | currency:'EUR' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && shops.length === 0 && products.length === 0" class="empty-state">
+        <mat-icon>search_off</mat-icon>
+        <h3>Aucun résultat trouvé</h3>
+        <p>Essayez d'autres mots-clés ou modifiez vos filtres.</p>
+        <button mat-button class="btn-premium" (click)="onCategorySelect(null); onSearch('')">Voir tout</button>
+      </div>
+
+    </div>
+  </section>
+</div>

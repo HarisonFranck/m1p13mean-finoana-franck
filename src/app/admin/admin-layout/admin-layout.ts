@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -18,6 +18,8 @@ import { FormsModule } from '@angular/forms';
 import { PlatformSettingsDialog } from './platform-settings-dialog';
 import { AdminService } from '../../core/services/admin.service';
 import { AuthService } from '../../core/services/auth.service';
+import { SocketService } from '../../core/services/socket.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-layout',
@@ -45,11 +47,12 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './admin-layout.html',
   styleUrl: './admin-layout.css',
 })
-export class AdminLayout implements OnInit {
+export class AdminLayout implements OnInit, OnDestroy {
   isSidenavOpen = true;
   searchQuery = '';
   searchResults: any[] = [];
   notifications: any[] = [];
+  private socketSubscription?: Subscription;
 
   // Data for the "Upstream" style Hero Section
   currentContext = {
@@ -64,6 +67,7 @@ export class AdminLayout implements OnInit {
     private dialog: MatDialog,
     private adminService: AdminService,
     private authService: AuthService,
+    private socketService: SocketService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
@@ -71,6 +75,21 @@ export class AdminLayout implements OnInit {
   ngOnInit() {
     this.loadSettings();
     this.fetchNotifications();
+    this.setupRealtimeSync();
+  }
+
+  ngOnDestroy() {
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
+  }
+
+  setupRealtimeSync() {
+    this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+      console.log('Realtime update received:', update);
+      // If notifications (or other global data) changed, refresh
+      this.fetchNotifications();
+    });
   }
 
   get unreadCount() {

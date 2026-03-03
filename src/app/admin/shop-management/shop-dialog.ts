@@ -395,7 +395,7 @@ export class ShopDialog implements OnInit {
   ) {
     this.shopForm = this.fb.group({
       name: [data.name || '', Validators.required],
-      idCategory: [data.idCategory?._id || data.idCategory || ''],
+      idCategory: [data.idCategory?._id || data.idCategory || '', Validators.required],
       location: [data.location || ''],
       description: [data.description || ''],
       idOwner: [data.idOwner?._id || data.idOwner || '', Validators.required],

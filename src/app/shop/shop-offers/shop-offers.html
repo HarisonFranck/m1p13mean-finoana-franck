@@ -1,0 +1,82 @@
+<div class="offers-container">
+    <div class="header-section">
+        <div class="title-group">
+            <h1>Mes Offres & Promotions</h1>
+            <p>Créez des offres pour attirer plus de clients. Vos offres sont soumises à validation par
+                l'administration.</p>
+        </div>
+        <button mat-flat-button color="primary" class="create-btn" (click)="openOfferDialog()">
+            <mat-icon>add</mat-icon> Nouvelle Offre
+        </button>
+    </div>
+
+    <mat-card class="table-card">
+        <table mat-table [dataSource]="offers" class="full-width-table">
+            <!-- Title -->
+            <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef>Offre</th>
+                <td mat-cell *matCellDef="let offer">
+                    <div class="offer-info">
+                        <span class="offer-title">{{ offer.title }}</span>
+                        <span class="offer-desc">{{ offer.description | slice:0:60 }}{{ offer.description.length > 60 ?
+                            '...' : '' }}</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Start Date -->
+            <ng-container matColumnDef="startDate">
+                <th mat-header-cell *matHeaderCellDef>Début</th>
+                <td mat-cell *matCellDef="let offer">{{ offer.startDate | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <!-- End Date -->
+            <ng-container matColumnDef="endDate">
+                <th mat-header-cell *matHeaderCellDef>Fin</th>
+                <td mat-cell *matCellDef="let offer">{{ offer.endDate | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <!-- Status -->
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Statut</th>
+                <td mat-cell *matCellDef="let offer">
+                    <span class="status-badge" [ngClass]="getStatusColor(offer.status)">
+                        <mat-icon *ngIf="offer.status === 'VALIDATED'">check_circle</mat-icon>
+                        <mat-icon *ngIf="offer.status === 'PENDING'">hourglass_empty</mat-icon>
+                        <mat-icon *ngIf="offer.status === 'REJECTED'">cancel</mat-icon>
+                        {{ offer.status === 'VALIDATED' ? 'Validée' : offer.status === 'PENDING' ? 'En attente' :
+                        'Rejetée' }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let offer">
+                    <div class="action-buttons">
+                        <button mat-icon-button color="primary" (click)="openOfferDialog(offer)" matTooltip="Modifier">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteOffer(offer._id)" matTooltip="Supprimer">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- No Data -->
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+                    <app-premium-empty-state icon="local_offer" title="Aucune offre trouvée"
+                        message="Oups ! Vous n'avez pas encore d'offres en cours. Créez votre première promotion pour attirer des clients !"
+                        actionText="Nouvelle Offre" actionIcon="add" [actionCallback]="openOfferDialog.bind(this)">
+                    </app-premium-empty-state>
+                </td>
+            </tr>
+        </table>
+    </mat-card>
+</div>

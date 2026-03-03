@@ -25,6 +25,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(authReq).pipe(
         catchError((error: HttpErrorResponse) => {
             if (error.status === 401 && !isDialogShowing) {
+                console.error('[AUTH] 401 Error on:', req.url);
                 isDialogShowing = true;
                 authService.logout(); // Clear token locally
 

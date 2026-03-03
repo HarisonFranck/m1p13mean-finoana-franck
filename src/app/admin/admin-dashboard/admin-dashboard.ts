@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +12,8 @@ import { AdminService } from '../../core/services/admin.service';
 import { RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { PlatformSettingsDialog } from '../admin-layout/platform-settings-dialog';
+import { SocketService } from '../../core/services/socket.service';
+import { Subscription } from 'rxjs';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -33,10 +35,11 @@ import autoTable from 'jspdf-autotable';
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
-export class AdminDashboard implements OnInit {
+export class AdminDashboard implements OnInit, OnDestroy {
   stats: any[] = [];
   isLoading = true;
   currentPeriod: 'weekly' | 'monthly' = 'weekly';
+  private socketSubscription?: Subscription;
 
   performanceData: number[] = [];
   performanceLabels: string[] = [];
@@ -49,6 +52,7 @@ export class AdminDashboard implements OnInit {
 
   constructor(
     private adminService: AdminService,
+    private socketService: SocketService,
     private dialog: MatDialog,
     @Inject(PLATFORM_ID) private platformId: Object
   ) { }
@@ -57,7 +61,22 @@ export class AdminDashboard implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.loadMallSettings();
       this.loadDashboardData();
+      this.setupRealtimeSync();
     }
+  }
+
+  ngOnDestroy() {
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
+  }
+
+  setupRealtimeSync() {
+    this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+      console.log('Dashboard: Realtime update received:', update);
+      // Refresh dashboard data when any relevant collection changes
+      this.loadDashboardData(this.currentPeriod);
+    });
   }
 
   loadMallSettings() {

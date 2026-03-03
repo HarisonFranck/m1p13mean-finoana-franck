@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier l\'offre' : 'Nouvelle Offre' }}</h2>
+<mat-dialog-content>
+    <form [formGroup]="offerForm" class="offer-form">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Titre de l'offre</mat-label>
+            <input matInput formControlName="title" placeholder="Ex: -20% sur la nouvelle collection">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="4" placeholder="Détails de l'offre..."></textarea>
+        </mat-form-field>
+
+        <div class="date-row">
+            <mat-form-field appearance="outline">
+                <mat-label>Date de début</mat-label>
+                <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+                <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Date de fin</mat-label>
+                <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+                <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+        </div>
+
+        <div class="info-alert" *ngIf="!isEdit">
+            <mat-icon>info</mat-icon>
+            <span>Cette offre sera soumise à la validation de l'administrateur avant d'être publiée.</span>
+        </div>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="dialogRef.close()">Annuler</button>
+    <button mat-flat-button color="primary" [disabled]="offerForm.invalid || isLoading" (click)="onSubmit()">
+        {{ isEdit ? 'Enregistrer' : 'Créer l\'offre' }}
+    </button>
+</mat-dialog-actions>

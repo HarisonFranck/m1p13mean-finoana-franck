@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
+import { SocketService } from '../../core/services/socket.service';
 import { ConfirmDialog } from '../../shared/components/confirm-dialog';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-category-management',
@@ -258,12 +260,14 @@ import { ConfirmDialog } from '../../shared/components/confirm-dialog';
     }
   `]
 })
-export class CategoryManagement implements OnInit {
+export class CategoryManagement implements OnInit, OnDestroy {
   categories: any[] = [];
   catForm: FormGroup;
+  private socketSubscription?: Subscription;
 
   constructor(
     private adminService: AdminService,
+    private socketService: SocketService,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
@@ -277,7 +281,23 @@ export class CategoryManagement implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.loadCategories();
+      this.setupRealtimeSync();
     }
+  }
+
+  ngOnDestroy() {
+    if (this.socketSubscription) {
+      this.socketSubscription.unsubscribe();
+    }
+  }
+
+  setupRealtimeSync() {
+    this.socketSubscription = this.socketService.onDataChanged().subscribe(update => {
+      console.log('Categories: Realtime update received:', update);
+      if (update.collection === 'categories') {
+        this.loadCategories();
+      }
+    });
   }
 
   loadCategories() {

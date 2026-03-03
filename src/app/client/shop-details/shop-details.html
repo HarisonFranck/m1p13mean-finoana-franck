@@ -1,0 +1,150 @@
+<div class="shop-details-container" *ngIf="!loading && shopData">
+    <!-- Shop Header / Banner -->
+    <div class="shop-banner">
+        <img [src]="shopData.shop.picture || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=2000'"
+            [alt]="shopData.shop.name" class="banner-img">
+        <div class="banner-overlay"></div>
+
+        <div class="shop-header-content">
+            <div class="shop-info-main">
+                <div class="back-link" routerLink="/client/home">
+                    <mat-icon>arrow_back</mat-icon>
+                    <span>Retour aux boutiques</span>
+                </div>
+                <h1>{{ shopData.shop.name }}</h1>
+                <div class="meta-row">
+                    <span class="category-tag">{{ shopData.shop.idCategory?.name }}</span>
+                    <div class="rating-badge">
+                        <mat-icon>star</mat-icon>
+                        <span>{{ shopData.shop.rating?.toFixed(1) || '0.0' }}</span>
+                    </div>
+                    <span class="status-badge" *ngIf="statusInfo" [ngClass]="statusInfo.class">
+                        <mat-icon *ngIf="statusInfo.class === 'closing-soon'">alarm</mat-icon>
+                        {{ statusInfo.label }}
+                        <span class="next-change" *ngIf="statusInfo.nextChange">({{ statusInfo.nextChange }})</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="action-buttons" *ngIf="authService.isAuthenticated()">
+                <button class="favorite-action" [class.is-fav]="isFavorite" (click)="toggleFavorite()">
+                    <mat-icon>{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+                    {{ isFavorite ? 'Dans mes favoris' : 'Ajouter aux favoris' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="shop-content-wrapper">
+        <mat-tab-group class="premium-tabs">
+            <!-- Products Tab -->
+            <mat-tab label="Nos Produits">
+                <div class="products-grid-section">
+                    <div class="section-title">
+                        <h2>Articles disponibles</h2>
+                        <p>Découvrez notre sélection exclusive</p>
+                    </div>
+
+                    <div *ngIf="shopData.products.length > 0" class="products-grid">
+                        <app-product-card *ngFor="let product of shopData.products"
+                            [product]="product"></app-product-card>
+                    </div>
+
+                    <div *ngIf="shopData.products.length === 0" class="empty-products">
+                        <mat-icon>inventory_2</mat-icon>
+                        <p>Aucun produit disponible pour le moment.</p>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- Reviews Tab -->
+            <mat-tab label="Avis Clients">
+                <div class="reviews-section">
+                    <div class="reviews-header">
+                        <div class="rating-summary">
+                            <h3>{{ shopData.shop.rating?.toFixed(1) || '0.0' }}</h3>
+                            <div class="stars">
+                                <mat-icon *ngFor="let i of [1,2,3,4,5]">star</mat-icon>
+                            </div>
+                            <span>Basé sur {{ shopData.reviews.length }} avis</span>
+                        </div>
+                        <button *ngIf="authService.isAuthenticated()" class="btn-premium mat-primary"
+                            (click)="openReviewDialog()">Donner mon avis</button>
+                    </div>
+
+                    <div class="reviews-list">
+                        <div *ngFor="let review of shopData.reviews" class="review-item">
+                            <div class="review-header">
+                                <span class="user-name">{{ review.user?.name }}</span>
+                                <span class="review-date">{{ review.createdAt | date:'longDate' }}</span>
+                            </div>
+                            <div class="review-stars">
+                                <mat-icon *ngFor="let s of [1,2,3,4,5]"
+                                    [class.filled]="s <= review.rating">star</mat-icon>
+                            </div>
+                            <p class="comment">{{ review.comment }}</p>
+                        </div>
+
+                        <div *ngIf="shopData.reviews.length === 0" class="empty-reviews">
+                            <p>Soyez le premier à donner votre avis !</p>
+                        </div>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- Info Tab -->
+            <mat-tab label="Informations">
+                <div class="info-section">
+                    <div class="info-grid">
+                        <div class="info-card profile-bio">
+                            <h3>À propos de nous</h3>
+                            <p>{{ shopData.shop.description }}</p>
+
+                            <div class="contact-details" *ngIf="shopData.shop.contactInfo">
+                                <div class="detail-item-mini" *ngIf="shopData.shop.contactInfo.phone">
+                                    <mat-icon>phone</mat-icon>
+                                    <span>{{ shopData.shop.contactInfo.phone }}</span>
+                                </div>
+                                <div class="detail-item-mini" *ngIf="shopData.shop.contactInfo.website">
+                                    <mat-icon>public</mat-icon>
+                                    <a [href]="shopData.shop.contactInfo.website" target="_blank">{{
+                                        shopData.shop.contactInfo.website }}</a>
+                                </div>
+                                <div class="social-links" *ngIf="shopData.shop.contactInfo.socialMedia">
+                                    <a *ngIf="shopData.shop.contactInfo.socialMedia.facebook"
+                                        [href]="shopData.shop.contactInfo.socialMedia.facebook" target="_blank"
+                                        class="social-btn">
+                                        <mat-icon>facebook</mat-icon>
+                                    </a>
+                                    <a *ngIf="shopData.shop.contactInfo.socialMedia.instagram"
+                                        [href]="'https://instagram.com/' + shopData.shop.contactInfo.socialMedia.instagram"
+                                        target="_blank" class="social-btn">
+                                        <mat-icon>camera_alt</mat-icon>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card opening-hours-card">
+                            <h3>Horaires d'ouverture</h3>
+                            <div class="hours-list">
+                                <div class="hour-item" *ngFor="let hour of shopData.shop.openingHours"
+                                    [class.is-today]="statusInfo?.label?.includes(hour.day)">
+                                    <span class="day">{{ hour.day }}</span>
+                                    <span class="dots"></span>
+                                    <span class="time" *ngIf="!hour.isClosed">{{ hour.open }} - {{ hour.close }}</span>
+                                    <span class="time closed" *ngIf="hour.isClosed">Fermé</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
+    </div>
+</div>
+
+<div class="loader-container" *ngIf="loading">
+    <div class="premium-loader"></div>
+</div>

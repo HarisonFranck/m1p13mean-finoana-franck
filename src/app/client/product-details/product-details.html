@@ -1,0 +1,55 @@
+<div class="product-details-container" *ngIf="!loading && product">
+    <div class="product-content-grid">
+        <!-- Image Gallery -->
+        <div class="image-section">
+            <div class="main-image">
+                <img [src]="product.picture || 'assets/placeholder-product.jpg'" [alt]="product.name">
+            </div>
+            <div class="back-nav" routerLink="/client/home">
+                <mat-icon>arrow_back</mat-icon>
+                <span>Retour</span>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="info-section">
+            <div class="category-info">
+                <span>{{ product.idCategory?.name }}</span>
+                <span class="shop-name" [routerLink]="['/client/shop', product.idShop?._id]">chez {{
+                    product.idShop?.name }}</span>
+            </div>
+
+            <h1>{{ product.name }}</h1>
+
+            <div class="rating-row">
+                <div class="stars">
+                    <mat-icon *ngFor="let s of [1,2,3,4,5]" [class.filled]="s <= product.rating">star</mat-icon>
+                </div>
+                <span>{{ product.rating?.toFixed(1) || '0.0' }} ({{ product.reviews?.length || 0 }} avis)</span>
+            </div>
+
+            <div class="price-section">
+                <span class="current-price">{{ product.price | currency:'EUR' }}</span>
+            </div>
+
+            <div class="description">
+                <h3>Description</h3>
+                <p>{{ product.description }}</p>
+            </div>
+
+            <div class="actions">
+                <button class="btn-premium mat-primary buy-btn">
+                    <mat-icon>shopping_cart</mat-icon>
+                    Ajouter au panier
+                </button>
+                <button *ngIf="authService.isAuthenticated()" class="favorite-outline">
+                    <mat-icon>favorite_border</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loader-container" *ngIf="loading">
+    <div class="premium-loader"></div>
+</div>

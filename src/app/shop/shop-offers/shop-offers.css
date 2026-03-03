@@ -1,0 +1,120 @@
+.offers-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+}
+
+.title-group h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.title-group p {
+    color: #64748b;
+    max-width: 600px;
+}
+
+.create-btn {
+    height: 48px !important;
+    padding: 0 24px !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3) !important;
+}
+
+.table-card {
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+.full-width-table {
+    width: 100%;
+}
+
+.offer-info {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+}
+
+.offer-title {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.offer-desc {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.status-badge.success {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.status-badge.warning {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+.status-badge.error {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.no-data-cell {
+    padding: 80px 0 !important;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    color: #94a3b8;
+}
+
+.empty-state mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    margin: 0;
+    color: #475569;
+}
