@@ -46,6 +46,10 @@ export class AdminService {
         return this.http.get(`${this.apiUrl}/categories`);
     }
 
+    getCategories(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/categories`);
+    }
+
     createCategory(categoryData: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/categories`, categoryData);
     }

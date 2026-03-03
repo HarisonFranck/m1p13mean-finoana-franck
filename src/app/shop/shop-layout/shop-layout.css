@@ -38,6 +38,31 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Developer Credits Footer */
+.developer-credits {
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.developer-credits:hover {
+    opacity: 1;
+}
+
+.developer-credits .dev-names {
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: 0.03em;
+}
+
 .logo-circle {
     width: 40px;
     height: 40px;

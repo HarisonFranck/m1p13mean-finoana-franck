@@ -37,6 +37,8 @@ export class ShopProfile implements OnInit, OnDestroy {
     profileForm: FormGroup;
     isLoading = false;
     days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    selectedFile: File | null = null;
+    imagePreview: string | null = null;
     private socketSub?: Subscription;
 
     constructor(
@@ -94,6 +96,8 @@ export class ShopProfile implements OnInit, OnDestroy {
                     contactInfo: shop.contactInfo || {}
                 });
 
+                this.imagePreview = shop.picture;
+
                 if (!this.profileForm.get('_id')) {
                     this.profileForm.addControl('_id', this.fb.control(shop._id));
                 } else {
@@ -135,14 +139,44 @@ export class ShopProfile implements OnInit, OnDestroy {
         });
     }
 
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file) {
+            this.selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = () => {
+                this.imagePreview = reader.result as string;
+                this.cdr.detectChanges();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
     onSubmit() {
         if (this.profileForm.valid) {
             this.isLoading = true;
             this.cdr.detectChanges();
-            this.shopService.updateShopProfile(this.profileForm.value).subscribe({
+
+            const formData = new FormData();
+            Object.keys(this.profileForm.value).forEach(key => {
+                const value = this.profileForm.get(key)?.value;
+                if (key === 'contactInfo' || key === 'openingHours') {
+                    formData.append(key, JSON.stringify(value));
+                } else if (key !== 'picture') {
+                    formData.append(key, value);
+                }
+            });
+
+            if (this.selectedFile) {
+                formData.append('picture', this.selectedFile);
+            }
+
+            this.shopService.updateShopProfile(formData).subscribe({
                 next: (res) => {
                     this.snackBar.open('Profil mis à jour avec succès', 'Fermer', { duration: 3000 });
                     this.isLoading = false;
+                    this.selectedFile = null;
+                    if (res.picture) this.imagePreview = res.picture;
                     this.cdr.detectChanges();
                 },
                 error: (err) => {

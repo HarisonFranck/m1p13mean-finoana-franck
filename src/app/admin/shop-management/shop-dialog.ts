@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from '../../core/services/admin.service';
 
 @Component({
@@ -20,7 +21,8 @@ import { AdminService } from '../../core/services/admin.service';
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
-    MatIconModule
+    MatIconModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="shop-dialog-premium-v2">
@@ -60,16 +62,14 @@ import { AdminService } from '../../core/services/admin.service';
               </div>
 
               <div class="category-selection-pro">
-                <label>Secteur d'activité</label>
-                <div class="chip-grid">
-                  <div class="choice-chip" 
-                       *ngFor="let cat of categories" 
-                       [class.selected]="shopForm.get('idCategory')?.value === cat._id"
-                       (click)="shopForm.get('idCategory')?.setValue(cat._id)">
-                    <mat-icon>category</mat-icon>
-                    {{ cat.name }}
-                  </div>
-                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Secteur d'activité</mat-label>
+                  <mat-select formControlName="idCategory">
+                    <mat-option *ngFor="let cat of categories" [value]="cat._id">
+                      {{ cat.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
               </div>
             </div>
 
@@ -114,11 +114,13 @@ import { AdminService } from '../../core/services/admin.service';
                   </mat-select>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="flex-2">
-                  <mat-label>Lien de l'image / Logo</mat-label>
-                  <input matInput formControlName="picture" placeholder="https://url-de-l-image.com/logo.png">
-                  <mat-icon matSuffix>image</mat-icon>
-                </mat-form-field>
+                <div class="custom-file-upload flex-2">
+                  <span class="upload-label">Lien de l'image / Logo</span>
+                  <div class="upload-area">
+                    <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input">
+                    <mat-icon class="upload-icon">image</mat-icon>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -138,9 +140,9 @@ import { AdminService } from '../../core/services/admin.service';
         </mat-dialog-content>
 
         <mat-dialog-actions align="end" class="actions-v2">
-          <button mat-button type="button" (click)="onCancel()" class="btn-cancel-v2">Annuler</button>
-          <button mat-flat-button color="primary" class="btn-submit-v2" type="submit" [disabled]="shopForm.invalid">
-           Créer la boutique
+          <button mat-button type="button" (click)="onCancel()" class="btn-cancel-v2" [disabled]="isSubmitting">Annuler</button>
+          <button mat-flat-button color="primary" class="btn-submit-v2" type="submit" [disabled]="shopForm.invalid || isSubmitting">
+           {{ isSubmitting ? 'Chargement...' : (data._id ? 'Sauvegarder les modifications' : 'Créer la boutique') }}
           </button>
         </mat-dialog-actions>
       </form>
@@ -152,6 +154,11 @@ import { AdminService } from '../../core/services/admin.service';
       height: 100%;
       display: flex;
       flex-direction: column;
+    }
+    
+    .file-input {
+      padding: 10px;
+      margin-top: 5px;
     }
 
     .header-container {
@@ -376,8 +383,32 @@ import { AdminService } from '../../core/services/admin.service';
       font-size: 14px;
     }
 
-    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none;
+    .custom-file-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .upload-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #334155;
+      padding-left: 2px;
+    }
+    .upload-area {
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+    .upload-area input {
+      font-size: 14px;
+      color: #475569;
+    }
+    .upload-icon {
+      color: #94a3b8;
     }
   `]
 })
@@ -385,14 +416,18 @@ export class ShopDialog implements OnInit {
   shopForm: FormGroup;
   categories: any[] = [];
   shopUsers: any[] = [];
+  isSubmitting: boolean = false;
+  isEditMode: boolean = false;
 
   constructor(
     private fb: FormBuilder,
     private adminService: AdminService,
     public dialogRef: MatDialogRef<ShopDialog>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private snackBar: MatSnackBar
   ) {
+    this.isEditMode = !!data?._id;
     this.shopForm = this.fb.group({
       name: [data.name || '', Validators.required],
       idCategory: [data.idCategory?._id || data.idCategory || '', Validators.required],
@@ -404,18 +439,67 @@ export class ShopDialog implements OnInit {
     });
   }
 
+  selectedFile: File | null = null;
+  onFileSelected(event: any) {
+    if (event.target.files.length > 0) {
+      this.selectedFile = event.target.files[0];
+    }
+  }
+
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.adminService.getAllCategories().subscribe(cats => this.categories = cats);
+      this.adminService.getAllCategories().subscribe(cats => {
+        this.categories = cats;
+        if (this.isEditMode && this.data?.idCategory) {
+          this.shopForm.get('idCategory')?.setValue(this.data.idCategory._id || this.data.idCategory);
+        }
+      });
       this.adminService.getAllUsers().subscribe(users => {
         this.shopUsers = users.filter((user: any) => user.profile === 'SHOP' && user.status !== 0 && user.status !== 2);
+        if (this.isEditMode && this.data?.idOwner) {
+          this.shopForm.get('idOwner')?.setValue(this.data.idOwner._id || this.data.idOwner);
+        }
       });
     }
   }
 
   onSubmit() {
-    if (this.shopForm.valid) {
-      this.dialogRef.close(this.shopForm.value);
+    if (this.shopForm.valid && !this.isSubmitting) {
+      this.isSubmitting = true;
+      const formData = new FormData();
+      Object.keys(this.shopForm.value).forEach(key => {
+        // Only append picture if it's a string, we attach the file normally.
+        if (key !== 'picture') {
+          formData.append(key, this.shopForm.value[key]);
+        }
+      });
+      if (this.selectedFile) {
+        formData.append('picture', this.selectedFile);
+      }
+
+      if (this.isEditMode) {
+        this.adminService.updateShop(this.data._id, formData).subscribe({
+          next: () => {
+            this.snackBar.open('Boutique mise à jour avec succès', 'Fermer', { duration: 3000 });
+            this.dialogRef.close(true);
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            this.snackBar.open('Erreur: ' + (err.error?.message || 'Mise à jour échouée'), 'Fermer', { duration: 5000 });
+          }
+        });
+      } else {
+        this.adminService.createShop(formData).subscribe({
+          next: () => {
+            this.snackBar.open('Boutique créée avec succès', 'Fermer', { duration: 3000 });
+            this.dialogRef.close(true);
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            this.snackBar.open('Erreur: ' + (err.error?.message || 'Création échouée'), 'Fermer', { duration: 5000 });
+          }
+        });
+      }
     }
   }
 

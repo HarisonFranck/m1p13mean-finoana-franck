@@ -14,7 +14,7 @@
         <!-- Product Info -->
         <div class="info-section">
             <div class="category-info">
-                <span>{{ product.idCategory?.name }}</span>
+                <span>{{ product.category }}</span>
                 <span class="shop-name" [routerLink]="['/client/shop', product.idShop?._id]">chez {{
                     product.idShop?.name }}</span>
             </div>
@@ -29,7 +29,7 @@
             </div>
 
             <div class="price-section">
-                <span class="current-price">{{ product.price | currency:'EUR' }}</span>
+                <span class="current-price">{{ product.price | currency:'MGA' }}</span>
             </div>
 
             <div class="description">

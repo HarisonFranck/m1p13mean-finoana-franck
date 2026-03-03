@@ -1,0 +1,82 @@
+<div class="products-container">
+    <div class="header-section">
+        <div class="header-content">
+            <h1>Mes Produits</h1>
+            <p>Gérez le catalogue de votre boutique et présentez vos meilleurs articles aux clients.</p>
+        </div>
+        <button mat-flat-button color="primary" class="add-btn" (click)="openProductDialog()">
+            <mat-icon>add</mat-icon>
+            Nouveau Produit
+        </button>
+    </div>
+
+    <mat-card class="products-card">
+        <div class="loading-shade" *ngIf="isLoading">
+            <mat-icon class="pulse">sync</mat-icon>
+        </div>
+
+        <div class="table-container" *ngIf="products.length > 0; else emptyState">
+            <table mat-table [dataSource]="products" class="premium-table">
+                <!-- Image Column -->
+                <ng-container matColumnDef="image">
+                    <th mat-header-cell *matHeaderCellDef>Image</th>
+                    <td mat-cell *matCellDef="let product">
+                        <img [src]="product.picture || 'assets/placeholder-product.png'" class="product-thumb"
+                            alt="Product image">
+                    </td>
+                </ng-container>
+
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Nom</th>
+                    <td mat-cell *matCellDef="let product">
+                        <div class="product-name-info">
+                            <span class="name">{{ product.name }}</span>
+                            <span class="desc">{{ product.description | slice:0:50 }}{{ product.description?.length > 50
+                                ? '...' : '' }}</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Price Column -->
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell *matHeaderCellDef>Prix</th>
+                    <td mat-cell *matCellDef="let product" class="price-cell">
+                        {{ product.price | currency:'MGA':'symbol':'1.2-2' }}
+                    </td>
+                </ng-container>
+
+                <!-- Category Column -->
+                <ng-container matColumnDef="category">
+                    <th mat-header-cell *matHeaderCellDef>Catégorie</th>
+                    <td mat-cell *matCellDef="let product">
+                        <span class="category-tag">{{ product.category || 'Non classé' }}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let product">
+                        <button mat-icon-button color="primary" (click)="openProductDialog(product)" title="Modifier">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteProduct(product._id)" title="Supprimer">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+
+        <ng-template #emptyState>
+            <app-premium-empty-state icon="inventory_2" title="Aucun produit"
+                message="Votre catalogue est vide. Ajoutez vos premiers produits pour commencer à vendre !"
+                actionText="Ajouter un Produit" actionIcon="add" [actionCallback]="openProductDialog.bind(this)">
+            </app-premium-empty-state>
+        </ng-template>
+    </mat-card>
+</div>

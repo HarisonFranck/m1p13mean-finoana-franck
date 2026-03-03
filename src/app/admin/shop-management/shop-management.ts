@@ -121,24 +121,8 @@ export class ShopManagement implements OnInit, OnDestroy {
         });
 
         dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                if (shop?._id) {
-                    this.adminService.updateShop(shop._id, result).subscribe({
-                        next: () => {
-                            this.snackBar.open('Boutique mise à jour !', '', { duration: 2000 });
-                            this.loadShops();
-                        },
-                        error: () => this.snackBar.open('Erreur de mise à jour', 'Fermer')
-                    });
-                } else {
-                    this.adminService.createShop(result).subscribe({
-                        next: () => {
-                            this.snackBar.open('Boutique créée !', '', { duration: 2000 });
-                            this.loadShops();
-                        },
-                        error: () => this.snackBar.open('Erreur de création', 'Fermer')
-                    });
-                }
+            if (result === true) {
+                this.loadShops();
             }
         });
     }

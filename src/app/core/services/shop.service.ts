@@ -42,9 +42,25 @@ export class ShopService {
         return this.http.post<any>(`${this.apiUrl}/reviews/${reviewId}/reply`, { comment });
     }
 
-    // Stats (Mock for now or if backend adds it)
+    // Stats
     getStats(): Observable<any> {
-        // This could be real stats from the backend later
         return this.http.get<any>(`${this.apiUrl}/shops/my-shop/stats`);
+    }
+
+    // Products
+    getMyProducts(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/products/my-products`);
+    }
+
+    createProduct(productData: FormData): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/products`, productData);
+    }
+
+    updateProduct(id: string, productData: FormData): Observable<any> {
+        return this.http.put<any>(`${this.apiUrl}/products/${id}`, productData);
+    }
+
+    deleteProduct(id: string): Observable<any> {
+        return this.http.delete<any>(`${this.apiUrl}/products/${id}`);
     }
 }

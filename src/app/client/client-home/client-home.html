@@ -71,7 +71,7 @@
               <h4>{{ product.name }}</h4>
               <div class="p-shop">{{ product.idShop?.name || 'Boutique Inconnue' }} <span
                   *ngIf="product.idShop?.location">- ({{ product.idShop?.location }})</span></div>
-              <div class="p-price">{{ product.price | currency:'EUR' }}</div>
+              <div class="p-price">{{ product.price | currency:'MGA' }}</div>
             </div>
           </div>
         </div>

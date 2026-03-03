@@ -35,12 +35,17 @@
                         </mat-form-field>
                     </div>
 
-                    <div class="form-row">
-                        <mat-form-field appearance="outline" class="full-width">
-                            <mat-label>URL du Logo / Image</mat-label>
-                            <input matInput formControlName="picture" placeholder="https://...">
-                            <mat-icon matSuffix>image</mat-icon>
-                        </mat-form-field>
+                    <div class="form-row image-upload-section">
+                        <div class="logo-preview"
+                            [style.background-image]="imagePreview ? 'url(' + imagePreview + ')' : null"
+                            (click)="logoInput.click()">
+                            <mat-icon *ngIf="!imagePreview">add_a_photo</mat-icon>
+                        </div>
+                        <div class="upload-info">
+                            <h3>Logo de la boutique</h3>
+                            <p>Cliquez sur l'image pour changer votre logo.</p>
+                            <input #logoInput type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
+                        </div>
                     </div>
                 </mat-card-content>
             </mat-card>

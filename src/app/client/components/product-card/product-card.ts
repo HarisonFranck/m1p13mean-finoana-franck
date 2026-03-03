@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
     <div class="product-card">
       <div class="product-image">
         <img [src]="product.picture || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1000'" [alt]="product.name">
-        <div class="price-tag">{{ product.price | currency:'EUR' }}</div>
+        <div class="price-tag">{{ product.price | currency:'MGA' }}</div>
       </div>
       <div class="product-info">
         <h3>{{ product.name }}</h3>

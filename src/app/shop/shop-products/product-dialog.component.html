@@ -1,0 +1,47 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le Produit' : 'Nouveau Produit' }}</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="productForm" class="product-form">
+        <!-- Image Upload Section -->
+        <div class="image-upload-container">
+            <div class="image-preview" [style.background-image]="imagePreview ? 'url(' + imagePreview + ')' : null"
+                (click)="fileInput.click()">
+                <mat-icon *ngIf="!imagePreview">add_a_photo</mat-icon>
+            </div>
+            <input #fileInput type="file" (change)="onFileSelected($event)" accept="image/*" hidden>
+            <p class="upload-hint">Cliquez pour ajouter une photo</p>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom du produit</mat-label>
+            <input matInput formControlName="name" placeholder="Ex: T-shirt Premium">
+            <mat-error *ngIf="productForm.get('name')?.hasError('required')">Le nom est requis</mat-error>
+        </mat-form-field>
+
+        <div class="form-row">
+            <mat-form-field appearance="outline">
+                <mat-label>Prix (Ar)</mat-label>
+                <input matInput type="number" formControlName="price" placeholder="0.00">
+                <mat-error *ngIf="productForm.get('price')?.hasError('required')">Le prix est requis</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Catégorie</mat-label>
+                <input matInput formControlName="category" placeholder="Ex: Vêtements, Électronique...">
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="3"
+                placeholder="Décrivez votre produit..."></textarea>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="dialogRef.close()" [disabled]="isSubmitting">Annuler</button>
+    <button mat-flat-button color="primary" [disabled]="productForm.invalid || isSubmitting" (click)="onSubmit()">
+        {{ isSubmitting ? 'Chargement...' : (isEdit ? 'Mettre à jour' : 'Créer') }}
+    </button>
+</mat-dialog-actions>
